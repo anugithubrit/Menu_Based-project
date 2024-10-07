@@ -1,0 +1,257 @@
+AWS module (`modules/aws/__init__.py`):
+
+```python
+import boto3
+import json
+from botocore.exceptions import ClientError
+from utils.menu import display_submenu, get_user_choice
+
+# Load AWS configuration
+with open('config/aws_config.json') as config_file:
+    aws_config = json.load(config_file)
+
+# Set up AWS session
+session = boto3.Session(
+    aws_access_key_id=aws_config['aws_access_key_id'],
+    aws_secret_access_key=aws_config['aws_secret_access_key'],
+    region_name=aws_config['region_name']
+)
+
+def launch_ec2_instance():
+    ec2 = session.resource('ec2')
+    try:
+        instance = ec2.create_instances(
+            ImageId='ami-xxxxxxxx',  # Replace with actual RHEL GUI AMI ID
+            InstanceType='t2.micro',
+            MinCount=1,
+            MaxCount=1,
+            KeyName='your-key-pair-name'  # Replace with your key pair name
+        )[0]
+        print(f"EC2 instance {instance.id} has been launched.")
+    except ClientError as e:
+        print(f"Error launching EC2 instance: {e}")
+
+def access_cloud_log():
+    cloudwatch = session.client('cloudwatch')
+    try:
+        response = cloudwatch.get_metric_data(
+            MetricDataQueries=[
+                {
+                    'Id': 'm1',
+                    'MetricStat': {
+                        'Metric': {
+                            'Namespace': 'AWS/EC2',
+                            'MetricName': 'CPUUtilization',
+                        },
+                        'Period': 300,
+                        'Stat': 'Average'
+                    },
+                    'ReturnData': True,
+                },
+            ],
+            StartTime='2024-08-22T00:00:00Z',  # Replace with desired start time
+            EndTime='2024-08-23T00:00:00Z'  # Replace with desired end time
+        )
+        print("Cloud log data:", response['MetricDataResults'])
+    except ClientError as e:
+        print(f"Error accessing cloud log: {e}")
+
+def create_s3_event_driven_architecture():
+    s3 = session.client('s3')
+    transcribe = session.client('transcribe')
+    
+    bucket_name = 'your-bucket-name'  # Replace with your S3 bucket name
+    
+    try:
+        # Create S3 bucket if it doesn't exist
+        s3.create_bucket(Bucket=bucket_name)
+        
+        # Set up S3 event notification
+        s3.put_bucket_notification_configuration(
+            Bucket=bucket_name,
+            NotificationConfiguration={
+                'LambdaFunctionConfigurations': [
+                    {
+                        'LambdaFunctionArn': 'your-lambda-function-arn',  # Replace with your Lambda function ARN
+                        'Events': ['s3:ObjectCreated:*'],
+                        'Filter': {
+                            'Key': {
+                                'FilterRules': [
+                                    {
+                                        'Name': 'suffix',
+                                        'Value': '.mp3'
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        )
+        
+        print(f"S3 event-driven architecture set up for bucket {bucket_name}")
+    except ClientError as e:
+        print(f"Error setting up S3 event-driven architecture: {e}")
+
+def connect_python_to_mongodb():
+    lambda_client = session.client('lambda')
+    
+    lambda_function_name = 'mongodb-connect-function'
+    
+    lambda_code = """
+import json
+import pymongo
+
+def lambda_handler(event, context):
+    client = pymongo.MongoClient("mongodb+srv://username:password@cluster.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+    db = client.test_database
+    collection = db.test_collection
+    
+    # Example: Insert a document
+    post = {"author": "Mike", "text": "My first MongoDB document"}
+    post_id = collection.insert_one(post).inserted_id
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps(f'Document inserted with id: {post_id}')
+    }
+    """
+    
+    try:
+        response = lambda_client.create_function(
+            FunctionName=lambda_function_name,
+            Runtime='python3.8',
+            Role='your-lambda-execution-role-arn',  # Replace with your Lambda execution role ARN
+            Handler='lambda_function.lambda_handler',
+            Code={
+                'ZipFile': lambda_code.encode('utf-8')
+            },
+            Description='Lambda function to connect to MongoDB',
+            Timeout=30,
+            MemorySize=128
+        )
+        print(f"Lambda function created: {response['FunctionArn']}")
+    except ClientError as e:
+        print(f"Error creating Lambda function: {e}")
+
+def upload_to_s3():
+    s3 = session.client('s3')
+    bucket_name = 'your-bucket-name'  # Replace with your S3 bucket name
+    file_name = 'example.txt'  # Replace with the file you want to upload
+    
+    try:
+        s3.upload_file(file_name, bucket_name, file_name)
+        print(f"File {file_name} uploaded to {bucket_name}")
+    except ClientError as e:
+        print(f"Error uploading file to S3: {e}")
+
+def integrate_lambda_with_s3():
+    s3 = session.client('s3')
+    lambda_client = session.client('lambda')
+    ses = session.client('ses')
+    
+    bucket_name = 'your-bucket-name'  # Replace with your S3 bucket name
+    lambda_function_name = 's3-email-function'
+    
+    lambda_code = """
+import json
+import boto3
+
+def lambda_handler(event, context):
+    s3 = boto3.client('s3')
+    ses = boto3.client('ses')
+    
+    # Get the object from the event
+    bucket = event['Records'][0]['s3']['bucket']['name']
+    key = event['Records'][0]['s3']['object']['key']
+    
+    # Get the object
+    response = s3.get_object(Bucket=bucket, Key=key)
+    content = response['Body'].read().decode('utf-8')
+    
+    # Parse email IDs
+    email_ids = content.split(',')
+    
+    # Send emails
+    for email in email_ids:
+        ses.send_email(
+            Source='your-verified-email@example.com',
+            Destination={'ToAddresses': [email.strip()]},
+            Message={
+                'Subject': {'Data': 'Test email from Lambda'},
+                'Body': {'Text': {'Data': 'This is a test email sent from AWS Lambda.'}}
+            }
+        )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps(f'Emails sent to {len(email_ids)} recipients')
+    }
+    """
+    
+    try:
+        # Create Lambda function
+        response = lambda_client.create_function(
+            FunctionName=lambda_function_name,
+            Runtime='python3.8',
+            Role='your-lambda-execution-role-arn',  # Replace with your Lambda execution role ARN
+            Handler='lambda_function.lambda_handler',
+            Code={
+                'ZipFile': lambda_code.encode('utf-8')
+            },
+            Description='Lambda function to send emails based on S3 uploads',
+            Timeout=30,
+            MemorySize=128
+        )
+        print(f"Lambda function created: {response['FunctionArn']}")
+        
+        # Set up S3 event notification
+        s3.put_bucket_notification_configuration(
+            Bucket=bucket_name,
+            NotificationConfiguration={
+                'LambdaFunctionConfigurations': [
+                    {
+                        'LambdaFunctionArn': response['FunctionArn'],
+                        'Events': ['s3:ObjectCreated:*'],
+                        'Filter': {
+                            'Key': {
+                                'FilterRules': [
+                                    {
+                                        'Name': 'suffix',
+                                        'Value': '.txt'
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        )
+        print(f"S3 event notification set up for bucket {bucket_name}")
+    except ClientError as e:
+        print(f"Error integrating Lambda with S3: {e}")
+
+def menu():
+    while True:
+        display_submenu("AWS")
+        choice = get_user_choice()
+        
+        if choice == '1':
+            launch_ec2_instance()
+        elif choice == '2':
+            access_cloud_log()
+        elif choice == '3':
+            create_s3_event_driven_architecture()
+        elif choice == '4':
+            connect_python_to_mongodb()
+        elif choice == '5':
+            upload_to_s3()
+        elif choice == '6':
+            integrate_lambda_with_s3()
+        elif choice == '7':
+            return
+        else:
+            print("Invalid choice. Please try again.")
+```
+
+This code implements the AWS module with the requested functionalities. Note that you'll need to replace placeholder values (like AMI IDs, bucket names, and ARNs) with your actual AWS resource identifiers.

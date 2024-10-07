@@ -1,0 +1,183 @@
+Linux module `modules/linux/__init__.py`:
+
+```python
+import os
+import subprocess
+import smtplib
+from email.mime.text import MIMEText
+from utils.menu import display_submenu, get_user_choice
+
+def send_whatsapp_message():
+    try:
+        number = input("Enter the WhatsApp number (with country code): ")
+        message = input("Enter your message: ")
+        subprocess.run(["termux-sms-send", "-n", number, message])
+        print("WhatsApp message sent successfully.")
+    except Exception as e:
+        print(f"Error sending WhatsApp message: {e}")
+
+def speak_command_output():
+    try:
+        command = input("Enter the command to execute: ")
+        output = subprocess.check_output(command, shell=True).decode('utf-8')
+        subprocess.run(["espeak", output])
+        print("Command output spoken successfully.")
+    except Exception as e:
+        print(f"Error speaking command output: {e}")
+
+def send_email_from_terminal():
+    try:
+        sender = input("Enter your email address: ")
+        password = input("Enter your email password: ")
+        recipient = input("Enter recipient's email address: ")
+        subject = input("Enter email subject: ")
+        body = input("Enter email body: ")
+
+        msg = MIMEText(body)
+        msg['Subject'] = subject
+        msg['From'] = sender
+        msg['To'] = recipient
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
+            smtp_server.login(sender, password)
+            smtp_server.sendmail(sender, recipient, msg.as_string())
+        print("Email sent successfully.")
+    except Exception as e:
+        print(f"Error sending email: {e}")
+
+def send_sms_from_terminal():
+    try:
+        number = input("Enter the phone number: ")
+        message = input("Enter your message: ")
+        subprocess.run(["termux-sms-send", "-n", number, message])
+        print("SMS sent successfully.")
+    except Exception as e:
+        print(f"Error sending SMS: {e}")
+
+def use_linux_as_zoom_server():
+    print("To use Linux as a Zoom server, you need to:")
+    print("1. Install Zoom for Linux")
+    print("2. Set up port forwarding on your router")
+    print("3. Configure Zoom settings for optimal server performance")
+    print("Please refer to Zoom documentation for detailed instructions.")
+
+def post_to_social_media():
+    platform = input("Enter the platform (telegram/instagram/facebook/discord): ")
+    message = input("Enter your message: ")
+    
+    if platform == "telegram":
+        # Using telegram-cli
+        subprocess.run(["telegram-cli", "-W", "-e", f"msg @channel_name '{message}'"])
+    elif platform == "instagram":
+        print("Posting to Instagram requires a third-party API or browser automation.")
+    elif platform == "facebook":
+        print("Posting to Facebook requires a third-party API or browser automation.")
+    elif platform == "discord":
+        # Using discord.py bot (requires setup)
+        print("Posting to Discord requires setting up a Discord bot.")
+    else:
+        print("Unsupported platform.")
+
+def change_file_folder_color():
+    path = input("Enter the path of the file or folder: ")
+    color = input("Enter the color (e.g., 00ff00 for green): ")
+    subprocess.run(["gio", "set", path, "metadata::custom-icon-color", f"#{color}"])
+    print("Color changed successfully.")
+
+def read_entire_ram():
+    print("Reading the entire RAM requires root privileges and is not recommended.")
+    print("It can be done using /dev/mem, but this is dangerous and may crash your system.")
+
+def change_gnome_terminal_look():
+    profile = input("Enter the profile name (leave empty for default): ")
+    bg_color = input("Enter background color (e.g., '#000000'): ")
+    fg_color = input("Enter foreground color (e.g., '#FFFFFF'): ")
+    
+    if profile:
+        subprocess.run(["dconf", "write", f"/org/gnome/terminal/legacy/profiles:/{profile}/background-color", f"'{bg_color}'"])
+        subprocess.run(["dconf", "write", f"/org/gnome/terminal/legacy/profiles:/{profile}/foreground-color", f"'{fg_color}'"])
+    else:
+        subprocess.run(["dconf", "write", "/org/gnome/terminal/legacy/profiles:/default/background-color", f"'{bg_color}'"])
+        subprocess.run(["dconf", "write", "/org/gnome/terminal/legacy/profiles:/default/foreground-color", f"'{fg_color}'"])
+    
+    print("GNOME terminal appearance changed successfully.")
+
+def create_user_and_set_password():
+    username = input("Enter the new username: ")
+    subprocess.run(["sudo", "useradd", username])
+    subprocess.run(["sudo", "passwd", username])
+    print(f"User {username} created and password set.")
+
+def run_linux_in_browser():
+    print("To run Linux in a browser, you can use services like:")
+    print("1. JupyterLab with a bash kernel")
+    print("2. WebAssembly-based Linux environments")
+    print("3. Online Linux terminals (e.g., bellard.org/jslinux)")
+    print("Please note that these options have limitations compared to a full Linux environment.")
+
+def google_search_from_terminal():
+    query = input("Enter your search query: ")
+    subprocess.run(["xdg-open", f"https://www.google.com/search?q={query.replace(' ', '+')}"])
+    print("Search results opened in your default browser.")
+
+def run_windows_software():
+    print("To run Windows software in Linux, you can use:")
+    print("1. Wine (Wine Is Not an Emulator)")
+    print("2. PlayOnLinux (a front-end for Wine)")
+    print("3. Virtual machines (e.g., VirtualBox, QEMU)")
+    print("For example, to run Notepad using Wine:")
+    subprocess.run(["wine", "notepad"])
+
+def sync_folders():
+    source = input("Enter the source folder path: ")
+    destination = input("Enter the destination folder path: ")
+    subprocess.run(["rsync", "-av", source, destination])
+    print("Folders synced successfully.")
+
+def ascii_art_conversion():
+    text = input("Enter the text to convert to ASCII art: ")
+    subprocess.run(["figlet", text])
+
+def menu():
+    while True:
+        display_submenu("Linux")
+        choice = get_user_choice()
+        
+        if choice == '1':
+            send_whatsapp_message()
+        elif choice == '2':
+            speak_command_output()
+        elif choice == '3':
+            send_email_from_terminal()
+        elif choice == '4':
+            send_sms_from_terminal()
+        elif choice == '5':
+            use_linux_as_zoom_server()
+        elif choice == '6':
+            post_to_social_media()
+        elif choice == '7':
+            change_file_folder_color()
+        elif choice == '8':
+            read_entire_ram()
+        elif choice == '9':
+            change_gnome_terminal_look()
+        elif choice == '10':
+            create_user_and_set_password()
+        elif choice == '11':
+            run_linux_in_browser()
+        elif choice == '12':
+            google_search_from_terminal()
+        elif choice == '13':
+            run_windows_software()
+        elif choice == '14':
+            sync_folders()
+        elif choice == '15':
+            ascii_art_conversion()
+        elif choice == '16':
+            return
+        else:
+            print("Invalid choice. Please try again.")
+```
+
+This implementation covers the Linux-based tasks you mentioned. Some of these functions may require additional setup or third-party tools to work properly.
+

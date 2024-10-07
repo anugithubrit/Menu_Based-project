@@ -1,0 +1,131 @@
+`main.py` to include these new modules:
+
+```python
+import sys
+from utils.menu import display_menu, get_user_choice
+from modules import aws, linux, python, docker, kubernetes, ml, fullstack
+
+def main():
+    while True:
+        display_menu()
+        choice = get_user_choice()
+        
+        if choice == '1':
+            aws.menu()
+        elif choice == '2':
+            linux.menu()
+        elif choice == '3':
+            python.menu()
+        elif choice == '4':
+            docker.menu()
+        elif choice == '5':
+            kubernetes.menu()
+        elif choice == '6':
+            ml.menu()
+        elif choice == '7':
+            fullstack.menu()
+        elif choice == '8':
+            print("Exiting the program.")
+            sys.exit(0)
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()
+```
+
+Finally, let's update the `utils/menu.py` file to include all the submenus:
+
+```python
+def display_menu():
+    print("\nMain Menu:")
+    print("1. AWS")
+    print("2. Linux")
+    print("3. Python")
+    print("4. Docker")
+    print("5. Kubernetes")
+    print("6. Machine Learning")
+    print("7. Full Stack")
+    print("8. Exit")
+
+def display_submenu(module):
+    print(f"\n{module} Submenu:")
+    if module == "AWS":
+        print("1. Launch EC2 instance")
+        print("2. Access cloud log")
+        print("3. Create S3 event-driven architecture")
+        print("4. Connect Python to MongoDB")
+        print("5. Upload to S3")
+        print("6. Integrate Lambda with S3")
+        print("7. Return to main menu")
+    elif module == "Linux":
+        print("1. Send WhatsApp message")
+        print("2. Speak command output")
+        print("3. Send email from terminal")
+        print("4. Send SMS from terminal")
+        print("5. Use Linux as a Zoom server")
+        print("6. Post to social media")
+        print("7. Change file/folder color")
+        print("8. Read entire RAM")
+        print("9. Change GNOME terminal look")
+        print("10. Create user and set password")
+        print("11. Run Linux in browser")
+        print("12. Google search from terminal")
+        print("13. Run Windows software")
+        print("14. Sync folders")
+        print("15. ASCII art conversion")
+        print("16. Return to main menu")
+    elif module == "Python":
+        print("1. Send email")
+        print("2. Send SMS")
+        print("3. Scrape Google results")
+        print("4. Get geolocation")
+        print("5. Text-to-audio conversion")
+        print("6. Control volume")
+        print("7. Send SMS via mobile")
+        print("8. Send bulk email")
+        print("9. Return to main menu")
+    elif module == "Docker":
+        print("1. Run Python in Docker")
+        print("2. Run GUI in Docker")
+        print("3. Run ML model in Docker")
+        print("4. Run Docker in Docker")
+        print("5. Launch VLC in Docker")
+        print("6. Launch webserver in Docker")
+        print("7. SSH into Docker container")
+        print("8. Return to main menu")
+    elif module == "Kubernetes":
+        print("1. Launch React server")
+        print("2. Launch MongoDB and Python")
+        print("3. Return to main menu")
+    elif module == "Machine Learning":
+        print("1. Automatic data processing")
+        print("2. Create and integrate model")
+        print("3. Crop face from image")
+        print("4. Apply filters to image")
+        print("5. Create custom image")
+        print("6. Apply cool filters to image")
+        print("7. Return to main menu")
+    elif module == "Full Stack":
+        print("1. Speech to text")
+        print("2. Access camera")
+        print("3. Live stream")
+        print("4. Record and post video")
+        print("5. Create search engine")
+        print("6. ChatGPT integration")
+        print("7. Docker metrics visualization")
+        print("8. Return to main menu")
+
+def get_user_choice():
+    return input("Enter your choice: ")
+```
+
+This completes the implementation of all the modules you requested. The project now has a main menu that allows users to access various submenus for AWS, Linux, Python, Docker, Kubernetes, Machine Learning, and Full Stack development tasks.
+
+To run the project, you would need to:
+
+1. Install all the required dependencies (you may want to create a `requirements.txt` file).
+2. Set up any necessary configurations (e.g., AWS credentials, API keys).
+3. Run `main.py` to start the application.
+
+Keep in mind that some of these functions require additional setup or may not work in all environments. You may need to adjust them based on your specific needs and system configuration.

@@ -1,0 +1,66 @@
+`requirements.txt` file that includes the main dependencies needed for the project:
+
+```
+boto3==1.18.0
+opencv-python==4.5.3.56
+numpy==1.21.0
+pandas==1.3.0
+scikit-learn==0.24.2
+matplotlib==3.4.2
+Flask==2.0.1
+requests==2.26.0
+beautifulsoup4==4.9.3
+SpeechRecognition==3.8.1
+PyAudio==0.2.11
+openai==0.27.0
+docker==5.0.0
+kubernetes==12.0.1
+pyyaml==5.4.1
+```
+
+To install these dependencies, follow these steps:
+
+1. Save the above content in a file named `requirements.txt` in your project's root directory.
+
+2. Open a terminal or command prompt.
+
+3. Navigate to your project's root directory.
+
+4. Create a virtual environment (optional but recommended):
+   ```
+   python -m venv venv
+   ```
+
+5. Activate the virtual environment:
+   - On Windows:
+     ```
+     venv\Scripts\activate
+     ```
+   - On macOS and Linux:
+     ```
+     source venv/bin/activate
+     ```
+
+6. Install the dependencies using pip:
+   ```
+   pip install -r requirements.txt
+   ```
+
+Please note:
+
+- Some of these libraries (like OpenCV and PyAudio) might require additional system-level dependencies. You may need to install these separately depending on your operating system.
+
+- The `PyAudio` library can be tricky to install on some systems. If you encounter issues, you might need to install it separately or use a pre-built wheel.
+
+- Depending on your system and Python version, you might need to use `pip3` instead of `pip`.
+
+- Make sure you have the latest version of pip installed:
+  ```
+  pip install --upgrade pip
+  ```
+
+- Some functionalities (like those involving AWS, Kubernetes, or Docker) might require additional setup or installations on your system.
+
+- The OpenAI API key is required for the ChatGPT integration. You'll need to sign up for an API key on the OpenAI website.
+
+After installing these dependencies, your Python environment should be set up to run the project. Remember to activate your virtual environment each time you work on the project.

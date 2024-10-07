@@ -1,0 +1,180 @@
+Docker module `modules/docker/__init__.py`:
+
+```python
+import subprocess
+import os
+from utils.menu import display_submenu, get_user_choice
+
+def run_python_in_docker():
+    print("Running a Python program in a Docker container...")
+    
+    # Create a simple Python script
+    with open('app.py', 'w') as f:
+        f.write('print("Hello from Docker!")')
+    
+    # Create a Dockerfile
+    with open('Dockerfile', 'w') as f:
+        f.write('''
+FROM python:3.9-slim
+COPY app.py /
+CMD ["python", "/app.py"]
+''')
+    
+    # Build and run the Docker image
+    subprocess.run(['docker', 'build', '-t', 'python-app', '.'])
+    subprocess.run(['docker', 'run', 'python-app'])
+    
+    # Clean up
+    os.remove('app.py')
+    os.remove('Dockerfile')
+
+def run_gui_in_docker():
+    print("Running a GUI program in a Docker container...")
+    print("Note: This requires X11 forwarding and may not work on all systems.")
+    
+    # Create a simple Python GUI script using Tkinter
+    with open('gui_app.py', 'w') as f:
+        f.write('''
+import tkinter as tk
+root = tk.Tk()
+label = tk.Label(root, text="Hello from Docker GUI!")
+label.pack()
+root.mainloop()
+''')
+    
+    # Create a Dockerfile
+    with open('Dockerfile', 'w') as f:
+        f.write('''
+FROM python:3.9-slim
+RUN apt-get update && apt-get install -y python3-tk
+COPY gui_app.py /
+CMD ["python", "/gui_app.py"]
+''')
+    
+    # Build and run the Docker image
+    subprocess.run(['docker', 'build', '-t', 'gui-app', '.'])
+    subprocess.run(['docker', 'run', '-e', 'DISPLAY=$DISPLAY', '-v', '/tmp/.X11-unix:/tmp/.X11-unix', 'gui-app'])
+    
+    # Clean up
+    os.remove('gui_app.py')
+    os.remove('Dockerfile')
+
+def run_ml_model_in_docker():
+    print("Running a Machine Learning model in a Docker container...")
+    
+    # Create a simple ML script using scikit-learn
+    with open('ml_app.py', 'w') as f:
+        f.write('''
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+# Load data
+iris = load_iris()
+X, y = iris.data, iris.target
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Train model
+clf = RandomForestClassifier(n_estimators=100)
+clf.fit(X_train, y_train)
+
+# Make predictions
+y_pred = clf.predict(X_test)
+
+# Print accuracy
+print(f"Accuracy: {accuracy_score(y_test, y_pred)}")
+''')
+    
+    # Create a Dockerfile
+    with open('Dockerfile', 'w') as f:
+        f.write('''
+FROM python:3.9-slim
+RUN pip install scikit-learn
+COPY ml_app.py /
+CMD ["python", "/ml_app.py"]
+''')
+    
+    # Build and run the Docker image
+    subprocess.run(['docker', 'build', '-t', 'ml-app', '.'])
+    subprocess.run(['docker', 'run', 'ml-app'])
+    
+    # Clean up
+    os.remove('ml_app.py')
+    os.remove('Dockerfile')
+
+def run_docker_in_docker():
+    print("Running Docker inside Docker (DinD) with CentOS image...")
+    
+    # Run Docker in Docker
+    subprocess.run(['docker', 'run', '--privileged', '-d', '--name', 'dind', 'docker:dind'])
+    
+    # Wait for Docker daemon to start
+    subprocess.run(['docker', 'exec', 'dind', 'sh', '-c', 'while ! docker info >/dev/null 2>&1; do sleep 1; done'])
+    
+    # Run CentOS inside DinD
+    subprocess.run(['docker', 'exec', 'dind', 'docker', 'run', 'centos:latest', 'echo', 'Hello from CentOS inside Docker!'])
+    
+    # Clean up
+    subprocess.run(['docker', 'stop', 'dind'])
+    subprocess.run(['docker', 'rm', 'dind'])
+
+def launch_vlc_in_docker():
+    print("Launching VLC Player inside a Docker container...")
+    print("Note: This requires X11 forwarding and may not work on all systems.")
+    
+    # Run VLC in Docker
+    subprocess.run(['docker', 'run', '-e', 'DISPLAY=$DISPLAY', '-v', '/tmp/.X11-unix:/tmp/.X11-unix', '--device', '/dev/snd', 'jess/vlc'])
+
+def launch_webserver_in_docker():
+    print("Launching a webserver in a Docker container...")
+    
+    # Create a simple HTML file
+    with open('index.html', 'w') as f:
+        f.write('<html><body><h1>Hello from Docker Webserver!</h1></body></html>')
+    
+    # Run Nginx container
+    subprocess.run(['docker', 'run', '-d', '-p', '8080:80', '-v', f'{os.getcwd()}/index.html:/usr/share/nginx/html/index.html', 'nginx'])
+    
+    print("Webserver is running. Visit http://localhost:8080 to see it.")
+    
+    # Clean up
+    os.remove('index.html')
+
+def ssh_into_docker_container():
+    print("SSH into a running Docker container...")
+    
+    # Run a container with SSH enabled
+    subprocess.run(['docker', 'run', '-d', '--name', 'ssh-container', '-p', '2222:22', 'rastasheep/ubuntu-sshd:14.04'])
+    
+    print("Container is running. You can SSH into it using:")
+    print("ssh root@localhost -p 2222")
+    print("The default password is 'root'")
+
+def menu():
+    while True:
+        display_submenu("Docker")
+        choice = get_user_choice()
+        
+        if choice == '1':
+            run_python_in_docker()
+        elif choice == '2':
+            run_gui_in_docker()
+        elif choice == '3':
+            run_ml_model_in_docker()
+        elif choice == '4':
+            run_docker_in_docker()
+        elif choice == '5':
+            launch_vlc_in_docker()
+        elif choice == '6':
+            launch_webserver_in_docker()
+        elif choice == '7':
+            ssh_into_docker_container()
+        elif choice == '8':
+            return
+        else:
+            print("Invalid choice. Please try again.")
+```
+

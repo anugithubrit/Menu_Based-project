@@ -1,0 +1,258 @@
+Full Stack module `modules/fullstack/__init__.py`:
+
+```python
+import speech_recognition as sr
+import cv2
+import numpy as np
+import requests
+from bs4 import BeautifulSoup
+import openai
+from utils.menu import display_submenu, get_user_choice
+
+def speech_to_text():
+    print("Converting speech to text...")
+    
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Say something:")
+        audio = recognizer.listen(source)
+    
+    try:
+        text = recognizer.recognize_google(audio)
+        print(f"You said: {text}")
+    except sr.UnknownValueError:
+        print("Sorry, I couldn't understand that.")
+    except sr.RequestError:
+        print("Sorry, there was an error connecting to the speech recognition service.")
+
+def access_camera():
+    print("Accessing camera and taking a photo...")
+    
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Error: Could not open camera.")
+        return
+    
+    ret, frame = cap.read()
+    if ret:
+        cv2.imwrite('photo.jpg', frame)
+        print("Photo saved as 'photo.jpg'")
+    else:
+        print("Error: Could not capture image.")
+    
+    cap.release()
+
+def live_stream():
+    print("Starting live stream from camera...")
+    print("Press 'q' to quit.")
+    
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Error: Could not open camera.")
+        return
+    
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("Error: Could not capture frame.")
+            break
+        
+        cv2.imshow('Live Stream', frame)
+        
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    
+    cap.release()
+    cv2.destroyAllWindows()
+
+def record_and_post_video():
+    print("This function would record a video and post it to Instagram.")
+    print("Note: Posting to Instagram programmatically violates their terms of service.")
+    print("Instead, here's a simple video recording function:")
+    
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Error: Could not open camera.")
+        return
+    
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640, 480))
+    
+    print("Recording... Press 'q' to stop.")
+    
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if ret:
+            out.write(frame)
+            cv2.imshow('frame', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        else:
+            break
+    
+    cap.release()
+    out.release()
+    cv2.destroyAllWindows()
+    print("Video saved as 'output.avi'")
+
+def create_search_engine():
+    print("Creating a simple search engine...")
+    
+    query = input("Enter a search query: ")
+    url = f"https://www.google.com/search?q={query}"
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+    
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    results = soup.find_all('div', class_='g')
+    
+    print(f"Search results for '{query}':")
+    for i, result in enumerate(results[:5], 1):
+        title = result.find('h3', class_='r')
+        link = result.find('a')
+        if title and link:
+            print(f"{i}. {title.text}")
+            print(f"   {link['href']}\n")
+
+def chatgpt_integration():
+    print("Integrating with ChatGPT...")
+    print("Note: This requires an OpenAI API key.")
+    
+    api_key = input("Enter your OpenAI API key: ")
+    openai.api_key = api_key
+    
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Say something to ChatGPT:")
+        audio = recognizer.listen(source)
+    
+    try:
+        user_input = recognizer.recognize_google(audio)
+        print(f"You said: {user_input}")
+        
+        response = openai.Completion.create(
+            engine="text-davinci-002",
+            prompt=user_input,
+            max_tokens=150
+        )
+        
+        print("ChatGPT response:")
+        print(response.choices[0].text.strip())
+    except sr.UnknownValueError:
+        print("Sorry, I couldn't understand that.")
+    except sr.RequestError:
+        print("Sorry, there was an error connecting to the speech recognition service.")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+
+def docker_metrics():
+    print("This function would display Docker metrics using JavaScript.")
+    print("To implement this, you would need to:")
+    print("1. Set up a backend API (e.g., using Flask) to fetch Docker metrics")
+    print("2. Create a frontend using HTML, CSS, and JavaScript")
+    print("3. Use a charting library like Chart.js to visualize the metrics")
+    print("\nHere's a basic structure:")
+
+    print("\nBackend (app.py):")
+    print('''
+from flask import Flask, jsonify
+import docker
+
+app = Flask(__name__)
+client = docker.from_env()
+
+@app.route('/metrics')
+def get_metrics():
+    containers = client.containers.list()
+    metrics = []
+    for container in containers:
+        stats = container.stats(stream=False)
+        metrics.append({
+            'name': container.name,
+            'cpu_usage': stats['cpu_stats']['cpu_usage']['total_usage'],
+            'memory_usage': stats['memory_stats']['usage']
+        })
+    return jsonify(metrics)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+    ''')
+
+    print("\nFrontend (index.html):")
+    print('''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Docker Metrics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="metricsChart"></canvas>
+    <script>
+        async function updateChart() {
+            const response = await fetch('/metrics');
+            const data = await response.json();
+            
+            const ctx = document.getElementById('metricsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.name),
+                    datasets: [{
+                        label: 'CPU Usage',
+                        data: data.map(d => d.cpu_usage),
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Memory Usage',
+                        data: data.map(d => d.memory_usage),
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        updateChart();
+        setInterval(updateChart, 5000);  // Update every 5 seconds
+    </script>
+</body>
+</html>
+    ''')
+
+def menu():
+    while True:
+        display_submenu("Full Stack")
+        choice = get_user_choice()
+        
+        if choice == '1':
+            speech_to_text()
+        elif choice == '2':
+            access_camera()
+        elif choice == '3':
+            live_stream()
+        elif choice == '4':
+            record_and_post_video()
+        elif choice == '5':
+            create_search_engine()
+        elif choice == '6':
+            chatgpt_integration()
+        elif choice == '7':
+            docker_metrics()
+        elif choice == '8':
+            return
+        else:
+            print("Invalid choice. Please try again.")
